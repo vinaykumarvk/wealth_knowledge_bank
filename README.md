@@ -1,74 +1,112 @@
-# Document Question Answering System
+# Wealth Knowledge Bank
 
-This application allows you to ask questions about your PDF documents and get accurate answers using AI.
+A document processing and question-answering system built with React, FastAPI, and LangChain.
 
 ## Features
 
-- Process multiple PDF documents
-- Create a searchable knowledge base using PostgreSQL
-- Ask questions in natural language
-- Get accurate answers based on document content
+- Upload and process PDF documents
+- Automatic embedding generation using OpenAI's text-embedding-3-large model
+- Question answering using GPT-4o
+- Modern React frontend with Material-UI
+- Incremental document processing
+- Source document tracking
+
+## Project Structure
+
+```
+wealth_knowledge_bank/
+├── frontend/           # React frontend
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── FileUpload.tsx
+│   │   │   └── QuestionAnswer.tsx
+│   │   └── App.tsx
+│   └── package.json
+├── backend/            # FastAPI backend
+│   ├── main.py
+│   └── requirements.txt
+├── knowledge_assets/   # PDF documents
+└── .env               # Environment variables
+```
 
 ## Setup
 
-1. Clone this repository
-2. Install the required dependencies:
+### Backend
+
+1. Create a virtual environment:
    ```bash
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
+
+2. Install dependencies:
+   ```bash
+   cd backend
    pip install -r requirements.txt
    ```
-3. Set up PostgreSQL:
-   ```bash
-   # Install PostgreSQL if not already installed
-   # For macOS:
-   brew install postgresql
-   # For Ubuntu:
-   sudo apt-get install postgresql postgresql-contrib
 
-   # Start PostgreSQL service
-   # For macOS:
-   brew services start postgresql
-   # For Ubuntu:
-   sudo service postgresql start
-
-   # Create database and user
-   psql -U postgres
-   CREATE DATABASE vector_db;
-   CREATE USER your_username WITH PASSWORD 'your_password';
-   GRANT ALL PRIVILEGES ON DATABASE vector_db TO your_username;
-   \q
-
-   # Install pgvector extension
-   psql -U your_username -d vector_db
-   CREATE EXTENSION vector;
-   \q
+3. Create a `.env` file with your configuration:
+   ```
+   OPENAI_API_KEY=your_openai_api_key
+   MODEL_NAME=gpt-4o
+   EMBEDDING_MODEL=text-embedding-3-large
+   CHUNK_SIZE=1000
+   CHUNK_OVERLAP=200
+   POSTGRES_HOST=your_postgres_host
+   POSTGRES_PORT=your_postgres_port
+   POSTGRES_DB=your_postgres_db
+   POSTGRES_USER=your_postgres_user
+   POSTGRES_PASSWORD=your_postgres_password
    ```
 
-4. Create a `.env` file based on `.env.example` and add your OpenAI API key and PostgreSQL credentials
-5. Place your PDF documents in the `knowledge_assets` directory
+4. Start the backend server:
+   ```bash
+   uvicorn main:app --reload
+   ```
+
+### Frontend
+
+1. Install dependencies:
+   ```bash
+   cd frontend
+   npm install
+   ```
+
+2. Start the development server:
+   ```bash
+   npm start
+   ```
 
 ## Usage
 
-1. Run the application:
-   ```bash
-   streamlit run app.py
-   ```
-2. Click the "Process Documents" button in the sidebar to create the knowledge base
-3. Enter your question in the main interface
-4. Get your answer!
+1. Open your browser and navigate to `http://localhost:3000`
+2. Upload PDF documents using the drag-and-drop interface
+3. Ask questions about the uploaded documents
+4. View answers with source document references
 
-## Requirements
+## API Endpoints
 
-- Python 3.8+
-- OpenAI API key
-- PostgreSQL with pgvector extension
-- PDF documents to process (placed in the `knowledge_assets` directory)
+### Backend
 
-## Note
+- `POST /upload`: Upload and process a PDF file
+- `POST /ask`: Ask a question about the processed documents
 
-The first time you process documents, it may take a few minutes depending on the size of your PDF files. This is because the system needs to:
-1. Extract text from PDFs
-2. Split the text into manageable chunks
-3. Create vector embeddings
-4. Store them in PostgreSQL with pgvector
+## Technologies Used
 
-Subsequent questions will be answered much faster as the knowledge base is already created in the database. 
+- Frontend:
+  - React
+  - TypeScript
+  - Material-UI
+  - Axios
+  - React Dropzone
+
+- Backend:
+  - FastAPI
+  - LangChain
+  - OpenAI
+  - PostgreSQL with PGVector
+  - Python
+
+## License
+
+MIT 
