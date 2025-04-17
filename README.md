@@ -1,111 +1,78 @@
-# Wealth Knowledge Bank
+# Wealth Nowledge Bank
 
-A document processing and question-answering system built with React, FastAPI, and LangChain.
+A document question answering system that processes PDF documents and answers questions based on their content.
 
 ## Features
 
-- Upload and process PDF documents
-- Automatic embedding generation using OpenAI's text-embedding-3-large model
-- Question answering using GPT-4o
-- Modern React frontend with Material-UI
-- Incremental document processing
-- Source document tracking
-
-## Project Structure
-
-```
-wealth_knowledge_bank/
-├── frontend/           # React frontend
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── FileUpload.tsx
-│   │   │   └── QuestionAnswer.tsx
-│   │   └── App.tsx
-│   └── package.json
-├── backend/            # FastAPI backend
-│   ├── main.py
-│   └── requirements.txt
-├── knowledge_assets/   # PDF documents
-└── .env               # Environment variables
-```
+- Process PDF documents from the `knowledge_assets` directory
+- Incremental processing of new or modified documents
+- Question answering using OpenAI's GPT models
+- Source document references for answers
+- Persistent storage using PostgreSQL with pgvector
 
 ## Setup
 
-### Backend
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/wealth_nowledge_bank.git
+cd wealth_nowledge_bank
+```
 
-1. Create a virtual environment:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   ```
+2. Create a virtual environment and install dependencies:
+```bash
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
 
-2. Install dependencies:
-   ```bash
-   cd backend
-   pip install -r requirements.txt
-   ```
+3. Create a `.env` file with your environment variables:
+```bash
+cp .env.example .env
+```
+Then edit `.env` with your actual values:
+```
+OPENAI_API_KEY=your_openai_api_key
+POSTGRES_PASSWORD=your_postgres_password
+MODEL_NAME=gpt-3.5-turbo
+EMBEDDING_MODEL=text-embedding-3-large
+CHUNK_SIZE=1000
+CHUNK_OVERLAP=200
+```
 
-3. Create a `.env` file with your configuration:
-   ```
-   OPENAI_API_KEY=your_openai_api_key
-   MODEL_NAME=gpt-4o
-   EMBEDDING_MODEL=text-embedding-3-large
-   CHUNK_SIZE=1000
-   CHUNK_OVERLAP=200
-   POSTGRES_HOST=your_postgres_host
-   POSTGRES_PORT=your_postgres_port
-   POSTGRES_DB=your_postgres_db
-   POSTGRES_USER=your_postgres_user
-   POSTGRES_PASSWORD=your_postgres_password
-   ```
-
-4. Start the backend server:
-   ```bash
-   uvicorn main:app --reload
-   ```
-
-### Frontend
-
-1. Install dependencies:
-   ```bash
-   cd frontend
-   npm install
-   ```
-
-2. Start the development server:
-   ```bash
-   npm start
-   ```
+4. Place your PDF documents in the `knowledge_assets` directory.
 
 ## Usage
 
-1. Open your browser and navigate to `http://localhost:3000`
-2. Upload PDF documents using the drag-and-drop interface
-3. Ask questions about the uploaded documents
-4. View answers with source document references
+1. Start the Streamlit app:
+```bash
+streamlit run app.py
+```
 
-## API Endpoints
+2. Open your browser and navigate to `http://localhost:8501`
 
-### Backend
+3. Click "Process Documents" in the sidebar to process your PDF files
 
-- `POST /upload`: Upload and process a PDF file
-- `POST /ask`: Ask a question about the processed documents
+4. Enter your question in the text input field and press Enter
 
-## Technologies Used
+## Project Structure
 
-- Frontend:
-  - React
-  - TypeScript
-  - Material-UI
-  - Axios
-  - React Dropzone
+- `app.py`: Main Streamlit application
+- `requirements.txt`: Python dependencies
+- `knowledge_assets/`: Directory for PDF documents
+- `.env`: Environment variables
+- `processing_state.json`: Tracks processed documents
+- `test_db.py`: Database connection test script
+- `test_embeddings.py`: Embeddings test script
 
-- Backend:
-  - FastAPI
-  - LangChain
-  - OpenAI
-  - PostgreSQL with PGVector
-  - Python
+## Dependencies
+
+- streamlit
+- langchain
+- openai
+- python-dotenv
+- pgvector
+- python-multipart
+- PyPDF2
 
 ## License
 
