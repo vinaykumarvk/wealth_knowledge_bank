@@ -9,6 +9,7 @@ A document question answering system that processes PDF documents and answers qu
 - Question answering using OpenAI's GPT models
 - Source document references for answers
 - Persistent storage using PostgreSQL with pgvector
+- REST API for integration with other applications
 
 ## Setup
 
@@ -43,6 +44,8 @@ CHUNK_OVERLAP=200
 
 ## Usage
 
+### Streamlit Interface
+
 1. Start the Streamlit app:
 ```bash
 streamlit run app.py
@@ -54,9 +57,57 @@ streamlit run app.py
 
 4. Enter your question in the text input field and press Enter
 
+### API Usage
+
+1. Start the API server:
+```bash
+cd api
+pip install -r requirements.txt
+python main.py
+```
+
+2. The API will be available at `http://localhost:8000`
+
+3. API Endpoints:
+
+   - `POST /upload`: Upload and process a PDF file
+     ```bash
+     curl -X POST -F "file=@path/to/document.pdf" http://localhost:8000/upload
+     ```
+
+   - `POST /ask`: Ask a question about the processed documents
+     ```bash
+     curl -X POST -H "Content-Type: application/json" \
+          -d '{"question": "What is the main topic?"}' \
+          http://localhost:8000/ask
+     ```
+
+   - `GET /status`: Get the current processing status
+     ```bash
+     curl http://localhost:8000/status
+     ```
+
+4. Example Python client usage:
+```python
+from api.client_example import upload_document, ask_question, get_status
+
+# Upload a document
+upload_result = upload_document("knowledge_assets/example.pdf")
+
+# Ask a question
+answer = ask_question("What is the main topic?")
+
+# Check status
+status = get_status()
+```
+
 ## Project Structure
 
 - `app.py`: Main Streamlit application
+- `api/`: API implementation
+  - `main.py`: FastAPI application
+  - `requirements.txt`: API dependencies
+  - `client_example.py`: Example API client
 - `requirements.txt`: Python dependencies
 - `knowledge_assets/`: Directory for PDF documents
 - `.env`: Environment variables
@@ -67,6 +118,7 @@ streamlit run app.py
 ## Dependencies
 
 - streamlit
+- fastapi
 - langchain
 - openai
 - python-dotenv
