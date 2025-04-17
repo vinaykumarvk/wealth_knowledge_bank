@@ -7,6 +7,9 @@ from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain.chains import RetrievalQA
 from langchain_community.vectorstores.pgvector import PGVector
 import urllib.parse
+import json
+import hashlib
+from datetime import datetime
 
 # Load environment variables
 load_dotenv()
@@ -14,6 +17,27 @@ load_dotenv()
 # Initialize session state
 if 'retriever' not in st.session_state:
     st.session_state.retriever = None
+
+def get_file_hash(file_path):
+    """Calculate MD5 hash of a file"""
+    hash_md5 = hashlib.md5()
+    with open(file_path, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
+
+def load_processing_state():
+    """Load the processing state from JSON file"""
+    try:
+        with open('processing_state.json', 'r') as f:
+            return json.load(f)
+    except FileNotFoundError:
+        return {"processed_files": {}}
+
+def save_processing_state(state):
+    """Save the processing state to JSON file"""
+    with open('processing_state.json', 'w') as f:
+        json.dump(state, f, indent=4)
 
 def get_connection_string():
     """Get PostgreSQL connection string"""
@@ -33,12 +57,37 @@ def process_documents():
         return
     
     try:
-        # Load and process documents
-        documents = []
+        # Load processing state
+        state = load_processing_state()
+        processed_files = state.get("processed_files", {})
+        
+        # Identify new or modified files
+        new_or_modified_files = []
         for pdf_file in pdf_files:
+            file_hash = get_file_hash(pdf_file)
+            file_info = processed_files.get(pdf_file, {})
+            
+            if pdf_file not in processed_files or file_info.get('hash') != file_hash:
+                new_or_modified_files.append(pdf_file)
+                processed_files[pdf_file] = {
+                    'hash': file_hash,
+                    'last_processed': datetime.now().isoformat()
+                }
+        
+        if not new_or_modified_files:
+            st.success("No new or modified files to process!")
+            return
+        
+        # Load and process only new or modified documents
+        documents = []
+        for pdf_file in new_or_modified_files:
             with st.status(f"Processing {os.path.basename(pdf_file)}..."):
                 loader = PyPDFLoader(pdf_file)
                 documents.extend(loader.load())
+        
+        if not documents:
+            st.warning("No new content to process!")
+            return
         
         # Split documents into chunks
         text_splitter = RecursiveCharacterTextSplitter(
@@ -60,7 +109,7 @@ def process_documents():
                 embedding=embeddings,
                 collection_name="document_embeddings",
                 connection_string=connection_string,
-                pre_delete_collection=True  # Clear existing collection
+                pre_delete_collection=False  # Don't delete existing collection
             )
             
             # Save retriever in session state
@@ -69,7 +118,10 @@ def process_documents():
                 search_kwargs={"k": 3}  # Return top 3 most relevant chunks
             )
         
-        st.success(f"Successfully processed {len(chunks)} document chunks!")
+        # Save updated processing state
+        save_processing_state(state)
+        
+        st.success(f"Successfully processed {len(chunks)} new document chunks!")
         
     except Exception as e:
         st.error(f"Error processing documents: {str(e)}")
